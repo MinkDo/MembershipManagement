@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.data.remote.RetrofitClient
 import com.example.membershipmanagement.data.repository.AuthRepository
+import com.example.membershipmanagement.data.repository.ProfileRepository
 
 import com.example.membershipmanagement.navigation.Screen
 import com.example.membershipmanagement.navigation.SetupNavGraph
@@ -34,6 +35,7 @@ import com.example.membershipmanagement.ui.theme.MembershipManagementTheme
 import com.example.membershipmanagement.utils.GenericViewModelFactory
 import com.example.membershipmanagement.utils.UserPreferences
 import com.example.membershipmanagement.viewmodel.AuthViewModel
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -43,11 +45,12 @@ class MainActivity : ComponentActivity() {
         val apiService = RetrofitClient.apiService // Tạo đối tượng ApiService
         val userPreferences = UserPreferences(this)  // Khởi tạo UserPreferences
         val authRepository  = AuthRepository(apiService, userPreferences)
+        val profileRepository = ProfileRepository(apiService,userPreferences)
         enableEdgeToEdge()
         setContent {
             MembershipManagementTheme {
 
-                    MainScreen(authRepository)
+                    MainScreen(authRepository,profileRepository)
 
             }
         }
@@ -57,13 +60,16 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(authRepository: AuthRepository) {
+fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileRepository) {
     val navController = rememberNavController()
 
     val authViewModel: AuthViewModel = viewModel(factory = GenericViewModelFactory { AuthViewModel(
         authRepository
     )})
-    SetupNavGraph(navController = navController, authViewModel)
+    val profileViewModel: ProfileViewModel = viewModel(factory = GenericViewModelFactory { ProfileViewModel(
+        profileRepository
+    )})
+    SetupNavGraph(navController = navController, authViewModel, profileViewModel)
 
 }
 @Composable

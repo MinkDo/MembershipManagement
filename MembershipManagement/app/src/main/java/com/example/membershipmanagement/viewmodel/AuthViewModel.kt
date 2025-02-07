@@ -35,6 +35,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             val result = authRepository.login(_uiState.value.email, _uiState.value.password)
+            Log.d("AuthViewModel","Result: $result")
             if (result.isSuccess) {
                 onSuccess()
             } else {

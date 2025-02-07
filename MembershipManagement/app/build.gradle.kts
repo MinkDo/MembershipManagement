@@ -40,7 +40,12 @@ android {
 }
 
 dependencies {
+    implementation (libs.kotlinx.coroutines.android) // Coroutines support
+    implementation (libs.okhttp)
+    implementation (libs.logging.interceptor)
 
+
+    implementation (libs.kotlin.reflect)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -62,14 +67,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
+    implementation(libs.coil.kt.coil.compose)
     implementation(libs.coil.compose)
     implementation(libs.androidx.material.icons.extended)
 
+
+    implementation (libs.retrofit.v290)
+    implementation (libs.converter.gson.v290)
     implementation (libs.gson)
-    implementation (libs.retrofit)
-    implementation (libs.converter.gson)
 
 
-    implementation (libs.kotlinx.coroutines.android) // Coroutines support
+
+
+
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.membershipmanagement.navigation.Screen
 import com.example.membershipmanagement.viewmodel.AuthViewModel
 
 @Composable
@@ -24,7 +25,6 @@ fun LoginScreen(
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-
 
     Scaffold(
         topBar = { LoginTopBar() }
@@ -38,7 +38,9 @@ fun LoginScreen(
         ) {
             OutlinedTextField(
                 value = uiState.email,
-                onValueChange = { authViewModel.updateEmail(it) },
+                onValueChange = {
+                    authViewModel.updateEmail(it)
+                                },
                 label = { Text("Email") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()
@@ -67,7 +69,9 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { authViewModel.login { navController.navigate("home") } },
+                onClick = {
+                    authViewModel.login { navController.navigate(Screen.Home.route) }
+                          },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading
             ) {
@@ -77,9 +81,7 @@ fun LoginScreen(
                     Text("Đăng nhập")
                 }
             }
-            TextButton(onClick = { navController.navigate("register_screen") }) {
-                Text("Chưa có tài khoản? Đăng ký ngay")
-            }
+
         }
     }
 }

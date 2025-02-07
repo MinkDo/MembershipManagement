@@ -1,7 +1,6 @@
 package com.example.membershipmanagement.loginRegister.screens
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
-
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.navigation.Screen
 import java.util.*
@@ -34,36 +35,18 @@ fun RegisterScreen(navController: NavController) {
 
     // State lưu trữ thông tin hội viên
     var fullName by remember { mutableStateOf("") }
-    var birthDate by remember { mutableStateOf("") }
-    var gender by remember { mutableStateOf("Nam") }
-    var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var joinDate by remember { mutableStateOf("") }
-    var beltLevel by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf("User") }
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+    var errorMessage by remember { mutableStateOf("") }
+    val isFormValid = fullName.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
+            password.isNotBlank() && confirmPassword.isNotBlank() && password == confirmPassword
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         profileImageUri = uri
-    }
-
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        if (bitmap != null) {
-            profileImageUri = Uri.parse(bitmap.toString())  // Chỉ để minh họa, cần xử lý ảnh đúng cách
-        }
-    }
-
-    val showDatePicker = { onDateSelected: (String) -> Unit ->
-        val calendar = Calendar.getInstance()
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                onDateSelected("$day/${month + 1}/$year")
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
     }
 
     Scaffold(
@@ -100,9 +83,6 @@ fun RegisterScreen(navController: NavController) {
                         )
                     }
                 }
-                TextButton(onClick = { cameraLauncher.launch(null) }) {
-                    Text("Chụp ảnh")
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -110,84 +90,70 @@ fun RegisterScreen(navController: NavController) {
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("Họ và tên") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = birthDate, onValueChange = { },
-                    label = { Text("Ngày sinh") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker { birthDate = it } }) {
-                            Icon(
-                                painterResource(id = R.drawable.calendar),
-                                contentDescription = "Chọn ngày"
-                            )
-                        }
-                    }
-                )
-
-                // Giới tính
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Giới tính:")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    GenderRadioButton("Nam", gender) { gender = it }
-                    GenderRadioButton("Nữ", gender) { gender = it }
-                }
-
-                OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("Số điện thoại") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    label = { Text("Họ và tên *") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text("Email *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = { Text("Địa chỉ") },
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Số điện thoại *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = joinDate, onValueChange = { },
-                    label = { Text("Ngày tham gia") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker { joinDate = it } }) {
-                            Icon(
-                                painterResource(id = R.drawable.calendar),
-                                contentDescription = "Chọn ngày"
-                            )
-                        }
-                    }
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Mật khẩu *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = beltLevel,
-                    onValueChange = { beltLevel = it },
-                    label = { Text("Cấp đai hiện tại") },
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Xác nhận mật khẩu *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                // Hiển thị lỗi nếu mật khẩu không khớp
+                if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                    Text("Mật khẩu xác nhận không khớp!", color = Color.Red)
+                }
+
+                // Chọn Role
+                RoleDropdown(role) { role = it }
+
+                // Hiển thị thông báo lỗi chung
+                if (errorMessage.isNotEmpty()) {
+                    Text(errorMessage, color = Color.Red)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = {
-                    // TODO: Xử lý đăng ký hội viên
-                    navController.navigate(Screen.Home.route)
-                }, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = {
+                        if (isFormValid) {
+                            navController.navigate(Screen.Home.route)
+                        } else {
+                            errorMessage = "Vui lòng nhập đầy đủ thông tin bắt buộc!"
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isFormValid
+                ) {
                     Text("Đăng ký")
                 }
             }
@@ -202,16 +168,31 @@ fun RegisterTopBar(navController: NavController) {
         title = { Text("Đăng ký hội viên", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
-                Text("←")
+                Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
             }
         }
     )
 }
 
 @Composable
-fun GenderRadioButton(label: String, selectedValue: String, onSelected: (String) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelected(label) }) {
-        RadioButton(selected = selectedValue == label, onClick = { onSelected(label) })
-        Text(label)
+fun RoleDropdown(selectedRole: String, onRoleSelected: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("Chọn vai trò:")
+        Button(onClick = { expanded = true }) {
+            Text(selectedRole)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf("User", "Admin").forEach { role ->
+                DropdownMenuItem(
+                    text = { Text(role) },
+                    onClick = {
+                        onRoleSelected(role)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }

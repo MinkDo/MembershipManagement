@@ -20,21 +20,22 @@ import com.example.membershipmanagement.membershipManagement.screens.MemberScree
 import com.example.membershipmanagement.membershipManagement.screens.ProfileScreen
 import com.example.membershipmanagement.membershipManagement.screens.ReportScreen
 import com.example.membershipmanagement.viewmodel.AuthViewModel
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 
-fun SetupNavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
+fun SetupNavGraph(navController: NavHostController, authViewModel: AuthViewModel, profileViewModel: ProfileViewModel) {
 
     NavHost(navController = navController, startDestination = Screen.Login.route) {
-        composable(Screen.Home.route) { HomeScreen(navController) }
+        composable(Screen.Home.route) { HomeScreen(navController,profileViewModel) }
         composable(Screen.Members.route) { MemberScreen(navController) }
         composable(Screen.Events.route) { EventScreen(navController) }
         composable(Screen.Finance.route) { FinanceScreen(navController) }
         composable(Screen.Reports.route) { ReportScreen(navController) }
         composable(Screen.Login.route) { LoginScreen(navController, authViewModel)  }
         composable(Screen.Register.route) { RegisterScreen(navController)  }
-        composable(Screen.Profile.route) { ProfileScreen(navController)  }
+        composable(Screen.Profile.route) { ProfileScreen(navController,profileViewModel)  }
         composable(Screen.ChangePassword.route) { ChangePasswordScreen(navController)  }
     }
 }

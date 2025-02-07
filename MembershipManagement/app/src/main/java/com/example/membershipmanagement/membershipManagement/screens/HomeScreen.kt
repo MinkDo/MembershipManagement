@@ -1,5 +1,6 @@
 package com.example.membershipmanagement.membershipManagement.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,22 +14,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+
+
 import coil3.compose.rememberAsyncImagePainter
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.navigation.Screen
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavController,
-    userPreferences: String = "admin"
+    profileViewModel: ProfileViewModel
 ) {
-    val userRole by remember { mutableStateOf(userPreferences) }
 
+    val profileState by profileViewModel.profileState.collectAsState()
+    profileViewModel.getProfile()
+    val avatarUrl = profileViewModel.getAvatarUrl()
     Scaffold(
         topBar = { HomeTopBar() }
     ) { paddingValues ->
@@ -47,10 +55,13 @@ fun HomeScreen(
                     .clickable { /* Mở màn hình chỉnh sửa profile */ },
                 contentAlignment = Alignment.Center
             ) {
+                Log.d("HomeScreen","Url ${profileViewModel.getAvatarUrl()}")
                 Image(
-                    painter = painterResource(id = R.drawable.avatar),
+
+                    painter = rememberImagePainter(avatarUrl),
                     contentDescription = "Ảnh đại diện",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
 
@@ -58,12 +69,14 @@ fun HomeScreen(
 
             // Tên  và Vai trò
             Text(
-                text = "Nguyễn Văn A",
+                text = profileViewModel.getName(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = if (userRole == "admin") "Admin" else "Member",
+                text =
+                    profileViewModel.getRole()
+                ,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -86,8 +99,10 @@ fun HomeScreen(
                         navController.navigate(Screen.ChangePassword.route)
                     }
 
-                    if (userRole == "admin") {
-
+                    if (profileViewModel.getRole() == "Admin") {
+                        HomeButton(text = "Đăng ký tài khoản") {
+                            navController.navigate(Screen.Register.route)
+                        }
                         HomeButton(text = "Quản lý hội viên") {
                             navController.navigate(Screen.Members.route)
                         }

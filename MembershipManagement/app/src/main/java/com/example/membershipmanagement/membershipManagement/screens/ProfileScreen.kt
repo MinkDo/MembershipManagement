@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,21 +16,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel = viewModel()
+    profileViewModel: ProfileViewModel
 ) {
-    val userProfile by profileViewModel.userProfile.collectAsState()
+    val userProfile by profileViewModel.profileState.collectAsState()
 
     Scaffold(
         topBar = { ProfileTopBar(navController) }
@@ -50,28 +54,28 @@ fun ProfileScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.avatar),
+                    painter = rememberImagePainter(userProfile.userData?.avatarUrl),
                     contentDescription = "Ảnh đại diện",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Thông tin cá nhân
-            Text(text = userProfile.fullName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(text = userProfile.email, fontSize = 16.sp, color = Color.Gray)
+            userProfile.userData?.let { Text(text = it.fullName, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+            userProfile.userData?.let { Text(text = it.email, fontSize = 16.sp, color = Color.Gray) }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            ProfileInfoItem(label = "Ngày sinh", value = userProfile.birthDate)
-            ProfileInfoItem(label = "Giới tính", value = userProfile.gender)
-            ProfileInfoItem(label = "Cấp đai", value = userProfile.beltLevel)
-            ProfileInfoItem(
-                label = "Trạng thái",
-                value = if (userProfile.isActive) "Đang hoạt động" else "Ngừng tham gia",
-                valueColor = if (userProfile.isActive) Color.Green else Color.Red
-            )
+
+
+            ProfileInfoItem(label = "Giới tính", value = userProfile.userData?.profile?.gender.toString())
+            ProfileInfoItem(label = "Địa chỉ", value = userProfile.userData?.profile?.address.toString())
+            ProfileInfoItem(label = "Cấp đai", value = userProfile.userData?.profile?.currentRank.toString())
+            ProfileInfoItem(label = "Ngày sinh", value = userProfile.userData?.profile?.dateOfBirth.toString())
+            ProfileInfoItem(label = "Ngày tham gia", value = userProfile.userData?.profile?.joinDate.toString())
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -92,7 +96,7 @@ fun ProfileTopBar(navController: NavController) {
         title = { Text("Hồ sơ cá nhân", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.Edit, contentDescription = "Quay lại")
+                Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Quay lại")
             }
         }
     )
@@ -107,6 +111,6 @@ fun ProfileInfoItem(label: String, value: String, valueColor: Color = Color.Blac
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        Text(text = value, fontSize = 16.sp, color = valueColor)
+        Text(text = if(value == "null")"" else value, fontSize = 16.sp, color = valueColor)
     }
 }

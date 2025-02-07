@@ -1,8 +1,5 @@
 package com.example.membershipmanagement.data.repository
 
-
-
-import android.content.Context
 import android.util.Log
 import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.utils.UserPreferences
@@ -10,14 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.example.membershipmanagement.data.repository.AuthRepository
-import com.example.membershipmanagement.viewmodel.AuthViewModel
-
-
-data class LoginRequest(val email: String, val password: String)
+data class LoginRequest(val email: String?, val password: String?)
 
 data class LoginResponse(
     val statusCode: Int,
@@ -27,8 +17,8 @@ data class LoginResponse(
 )
 
 data class Errors(
-    val email: List<String>?,
-    val password: List<String>?
+    val Email: List<String>?,
+    val Password: List<String>?
 )
 
 data class LoginData(
@@ -41,20 +31,31 @@ class AuthRepository(private val apiService: ApiService, private val userPrefere
     suspend fun login(email: String, password: String): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("AuthRepository","Start login...")
                 val response = apiService.login(LoginRequest(email, password))
                 Log.d("AuthRepository","Response: $response")
-                if (response.statusCode == 200 && response.data != null) {
-                    userPreferences.saveToken(response.data.token) // Lưu token
-                    userPreferences.saveUserEmail(email) // Lưu email
-                    Result.success(response.message)
+                if (response.isSuccessful && response.body() != null) {
+                    val responseBody = response.body()!!
+                    userPreferences.saveToken(responseBody.data?.token ?: "")
+                    userPreferences.saveUserEmail(email)
+                    Result.success(responseBody.message)
                 } else {
-                    Result.failure(Exception(response.message))
+                    val errorMessage = "Tài khoản mật khẩu không chính xác."
+                    Log.e("AuthRepository",response.errorBody()?.string() ?: "Lỗi không xác định")
+                    Result.failure(Exception(errorMessage))
                 }
             } catch (e: HttpException) {
-                Result.failure(Exception("Lỗi máy chủ: ${e.message}"))
+                Result.failure(Exception("Lỗi HTTP: ${e.message}"))
             } catch (e: Exception) {
                 Result.failure(Exception("Lỗi kết nối: ${e.message}"))
             }
         }
+    }
+
+
+    private fun parseErrors(errors: Errors): String {
+        val emailError = errors.Email?.joinToString(", ") ?: ""
+        val passwordError = errors.Password?.joinToString(", ") ?: ""
+        return listOf(emailError, passwordError).filter { it.isNotEmpty() }.joinToString("\n")
     }
 }

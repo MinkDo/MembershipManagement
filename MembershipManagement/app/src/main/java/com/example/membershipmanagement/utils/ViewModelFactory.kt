@@ -6,9 +6,10 @@ class GenericViewModelFactory<T : ViewModel>(
     private val creator: () -> T
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(creator().javaClass)) {
-            return creator() as T
+        val viewModel = creator() // Ensure it's created only once
+        if (modelClass.isAssignableFrom(viewModel::class.java)) {
+            return viewModel as T
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }
