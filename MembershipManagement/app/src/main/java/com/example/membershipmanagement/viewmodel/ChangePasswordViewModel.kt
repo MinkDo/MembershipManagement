@@ -2,6 +2,7 @@ package com.example.membershipmanagement.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.membershipmanagement.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -12,10 +13,12 @@ data class ChangePasswordUiState(
     val newPassword: String = "",
     val confirmPassword: String = "",
     val errorMessage: String = "",
-    val isButtonEnabled: Boolean = false
+    val successMessage: String = "",
+    val isButtonEnabled: Boolean = false,
+    val isLoading: Boolean = false
 )
 
-class ChangePasswordViewModel : ViewModel() {
+class ChangePasswordViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ChangePasswordUiState())
     val uiState: StateFlow<ChangePasswordUiState> get() = _uiState
 
@@ -53,10 +56,24 @@ class ChangePasswordViewModel : ViewModel() {
         )
     }
 
-    fun changePassword(navController: NavController) {
+    fun changePassword(userId: String) {
         viewModelScope.launch {
-            // TODO: Gửi API thay đổi mật khẩu ở đây
-            navController.popBackStack() // Quay lại màn trước sau khi đổi mật khẩu
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = "", successMessage = "")
+
+            val result = userRepository.changePassword(
+                userId = userId,
+                currentPassword = _uiState.value.oldPassword,
+                newPassword = _uiState.value.newPassword,
+                confirmNewPassword = _uiState.value.confirmPassword
+            )
+
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(successMessage = result.getOrNull() ?: "Đổi mật khẩu thành công!", errorMessage = "")
+            } else {
+                _uiState.value = _uiState.value.copy(errorMessage = result.exceptionOrNull()?.message ?: "Lỗi không xác định", successMessage = "")
+            }
+
+            _uiState.value = _uiState.value.copy(isLoading = false)
         }
     }
 }

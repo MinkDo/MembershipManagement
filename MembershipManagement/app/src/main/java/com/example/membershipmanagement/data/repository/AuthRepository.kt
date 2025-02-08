@@ -5,7 +5,14 @@ import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.utils.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import retrofit2.HttpException
+import java.io.File
 
 data class LoginRequest(val email: String?, val password: String?)
 
@@ -50,12 +57,76 @@ class AuthRepository(private val apiService: ApiService, private val userPrefere
                 Result.failure(Exception("Lỗi kết nối: ${e.message}"))
             }
         }
-    }
 
 
-    private fun parseErrors(errors: Errors): String {
-        val emailError = errors.Email?.joinToString(", ") ?: ""
-        val passwordError = errors.Password?.joinToString(", ") ?: ""
-        return listOf(emailError, passwordError).filter { it.isNotEmpty() }.joinToString("\n")
     }
+
+    suspend fun registerUser(
+        roles: Int,
+        avatarFile: File?,
+        fullName: String,
+        email: String,
+        phoneNumber: String,
+        password: String,
+        confirmPassword: String
+    ): Result<String> {
+        return try {
+            val rolesBody = roles.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            val fullNameBody = fullName.toRequestBody("text/plain".toMediaTypeOrNull())
+            val emailBody = email.toRequestBody("text/plain".toMediaTypeOrNull())
+            val phoneBody = phoneNumber.toRequestBody("text/plain".toMediaTypeOrNull())
+            val passwordBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
+            val confirmPasswordBody = confirmPassword.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            // Xử lý file ảnh (nếu có)
+            val avatarPart = avatarFile?.let {
+                val requestFile = it.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("Avatar", it.name, requestFile)
+            }
+
+            val token = userPreferences.getToken()
+            if (token == null) {
+                return Result.failure(Exception("Không có token xác thực"))
+            }
+
+            val response = apiService.registerUser(
+                "Bearer $token",
+                rolesBody, avatarPart, fullNameBody, emailBody,
+                phoneBody, passwordBody, confirmPasswordBody
+            )
+
+            if (response.isSuccessful) {
+                Log.d("ProfileRepository", "Cập nhật thành công")
+                Result.success("Cập nhật thành công")
+            } else {
+                // 📌 Trích xuất lỗi từ JSON response
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = extractErrorMessage(errorBody)
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Lỗi kết nối: ${e.message}"))
+        }
+    }
+
+    private fun extractErrorMessage(errorBody: String?): String {
+        return try {
+            val jsonObject = JSONObject(errorBody ?: "{}")
+            val errorsObject = jsonObject.optJSONObject("errors")
+            val errorMessages = mutableListOf<String>()
+
+            errorsObject?.keys()?.forEach { key ->
+                errorsObject.getJSONArray(key).let { array ->
+                    for (i in 0 until array.length()) {
+                        errorMessages.add(array.getString(i))
+                    }
+                }
+            }
+
+            errorMessages.joinToString("\n") // Gộp tất cả lỗi lại thành 1 chuỗi
+        } catch (e: Exception) {
+            "Lỗi không xác định"
+        }
+    }
+
 }

@@ -1,32 +1,36 @@
 package com.example.membershipmanagement.membershipManagement.screens
 
+import UserViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.membershipmanagement.data.model.Member
 import com.example.membershipmanagement.membershipManagement.components.MemberItem
-import com.example.membershipmanagement.viewmodel.MemberViewModel
+import com.example.membershipmanagement.navigation.Screen
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun MemberScreen(
     navController: NavController,
-    memberViewModel: MemberViewModel = viewModel()
+    userViewModel: UserViewModel,
+    profileViewModel: ProfileViewModel,
 ) {
-    val members by memberViewModel.filteredMembers.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedGender by remember { mutableStateOf("Tất cả") }
-    var selectedBelt by remember { mutableStateOf("Tất cả") }
-    var selectedStatus by remember { mutableStateOf("Tất cả") }
+    val uiState by userViewModel.uiState.collectAsState()
+    val members = uiState.users
+    val coroutineScope = rememberCoroutineScope()
+    // ✅ Gọi API khi mở màn hình
+    LaunchedEffect(Unit) {
+        userViewModel.filterUsers()
+    }
 
     Scaffold(
         topBar = { MemberTopBar(navController) }
@@ -39,45 +43,49 @@ fun MemberScreen(
         ) {
             // Thanh tìm kiếm
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    memberViewModel.filterMembers(searchQuery, selectedGender, selectedBelt, selectedStatus)
-                },
+                value = uiState.searchQuery,
+                onValueChange = { userViewModel.updateSearchQuery(it) },
                 label = { Text("Tìm kiếm theo tên") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Bộ lọc
             FilterRow(
-                selectedGender = selectedGender,
-                onGenderSelected = {
-                    selectedGender = it
-                    memberViewModel.filterMembers(searchQuery, selectedGender, selectedBelt, selectedStatus)
-                },
-                selectedBelt = selectedBelt,
-                onBeltSelected = {
-                    selectedBelt = it
-                    memberViewModel.filterMembers(searchQuery, selectedGender, selectedBelt, selectedStatus)
-                },
-                selectedStatus = selectedStatus,
-                onStatusSelected = {
-                    selectedStatus = it
-                    memberViewModel.filterMembers(searchQuery, selectedGender, selectedBelt, selectedStatus)
-                }
+                selectedGender = uiState.selectedGender,
+                onGenderSelected = { userViewModel.updateGenderFilter(it) },
+                selectedBelt = uiState.selectedBelt,
+                onBeltSelected = { userViewModel.updateBeltFilter(it) },
+                selectedStatus = uiState.selectedStatus,
+                onStatusSelected = { userViewModel.updateStatusFilter(it) }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Danh sách hội viên
-            LazyColumn {
-                items(members) { member ->
-                    MemberItem(
-                        member = member,
-                        onEdit = { navController.navigate("") },
-                        onDelete = { memberViewModel.removeMember(member.id) },
-                        onToggleStatus = { memberViewModel.toggleMemberStatus(member.id) }
-                    )
+            // Hiển thị trạng thái tải dữ liệu hoặc lỗi
+            when {
+                uiState.isLoading -> CircularProgressIndicator()
+                uiState.errorMessage.isNotEmpty() -> Text("Lỗi: ${uiState.errorMessage}", color = MaterialTheme.colorScheme.error)
+                members.isEmpty() -> Text("Không có hội viên nào", modifier = Modifier.padding(16.dp))
+                else -> {
+                    LazyColumn {
+                        items(members) { member ->
+                            MemberItem(
+                                member = member,
+                                onEdit = {
+                                    coroutineScope.launch {
+                                        profileViewModel.getUserById(member.id) // 🌟 Chờ API hoàn tất
+                                        delay(1000)
+                                        navController.navigate(Screen.EditProfile.route) // ✅ Chỉ điều hướng sau khi API hoàn tất
+                                    } },
+                                onDelete = { userViewModel.deleteUser(member.id) },
+                                onclick = { coroutineScope.launch {
+                                    profileViewModel.getUserById(member.id) // 🌟 Chờ API hoàn tất
+                                    delay(1000)
+                                    navController.navigate(Screen.Profile.route) // ✅ Chỉ điều hướng sau khi API hoàn tất
+                                } }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -114,8 +122,8 @@ fun DropdownFilter(title: String, options: List<String>, selectedOption: String,
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        onOptionSelected(option)
-                        expanded = false
+                        onOptionSelected(option) // ✅ Cập nhật giá trị
+                        expanded = false // ✅ Đóng dropdown
                     }
                 )
             }
@@ -123,17 +131,15 @@ fun DropdownFilter(title: String, options: List<String>, selectedOption: String,
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemberTopBar(navController: NavController) {
     TopAppBar(
         title = { Text("Quản lý hội viên", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Quay lại"
-            )
+            IconButton(onClick = { navController.popBackStack() }) { // ✅ Fix lỗi không thể quay lại
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
+            }
         }
     )
 }

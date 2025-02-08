@@ -1,6 +1,5 @@
 package com.example.membershipmanagement.loginRegister.screens
 
-import android.app.DatePickerDialog
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,30 +22,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.navigation.Screen
-import java.util.*
+import com.example.membershipmanagement.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel()
+) {
+    val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    val isFormValid = uiState.fullName.isNotBlank() && uiState.email.isNotBlank() &&
+            uiState.phoneNumber.isNotBlank() && uiState.password.isNotBlank() &&
+            uiState.confirmPassword.isNotBlank() && uiState.password == uiState.confirmPassword
 
-    // State lưu trữ thông tin hội viên
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("User") }
-    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
-    var errorMessage by remember { mutableStateOf("") }
-    val isFormValid = fullName.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
-            password.isNotBlank() && confirmPassword.isNotBlank() && password == confirmPassword
-
-    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        profileImageUri = uri
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { authViewModel.updateAvatarUri(it.toString()) }
     }
 
     Scaffold(
@@ -69,7 +65,7 @@ fun RegisterScreen(navController: NavController) {
                         .clickable { imagePicker.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
-                    if (profileImageUri == null) {
+                    if (uiState.avatarUri == null) {
                         Image(
                             painter = painterResource(id = R.drawable.avatar),
                             contentDescription = "Ảnh đại diện",
@@ -77,7 +73,7 @@ fun RegisterScreen(navController: NavController) {
                         )
                     } else {
                         Image(
-                            painter = rememberAsyncImagePainter(profileImageUri),
+                            painter = rememberAsyncImagePainter(uiState.avatarUri),
                             contentDescription = "Ảnh đại diện",
                             modifier = Modifier.fillMaxSize()
                         )
@@ -88,31 +84,31 @@ fun RegisterScreen(navController: NavController) {
 
                 // Form nhập thông tin
                 OutlinedTextField(
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = uiState.fullName,
+                    onValueChange = { authViewModel.updateFullName(it) },
                     label = { Text("Họ và tên *") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = uiState.email,
+                    onValueChange = { authViewModel.updateEmail(it) },
                     label = { Text("Email *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
+                    value = uiState.phoneNumber,
+                    onValueChange = { authViewModel.updatePhone(it) },
                     label = { Text("Số điện thoại *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = uiState.password,
+                    onValueChange = { authViewModel.updatePassword(it) },
                     label = { Text("Mật khẩu *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     visualTransformation = PasswordVisualTransformation(),
@@ -120,8 +116,8 @@ fun RegisterScreen(navController: NavController) {
                 )
 
                 OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
+                    value = uiState.confirmPassword,
+                    onValueChange = { authViewModel.updateConfirmPassword(it) },
                     label = { Text("Xác nhận mật khẩu *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     visualTransformation = PasswordVisualTransformation(),
@@ -129,16 +125,16 @@ fun RegisterScreen(navController: NavController) {
                 )
 
                 // Hiển thị lỗi nếu mật khẩu không khớp
-                if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                if (uiState.password.isNotEmpty() && uiState.confirmPassword.isNotEmpty() && uiState.password != uiState.confirmPassword) {
                     Text("Mật khẩu xác nhận không khớp!", color = Color.Red)
                 }
 
                 // Chọn Role
-                RoleDropdown(role) { role = it }
+                RoleDropdown(uiState.role) { authViewModel.updateRole(it) }
 
-                // Hiển thị thông báo lỗi chung
-                if (errorMessage.isNotEmpty()) {
-                    Text(errorMessage, color = Color.Red)
+                // **Hiển thị lỗi từ API**
+                if (uiState.errorMessage.isNotEmpty()) {
+                    Text(uiState.errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -146,15 +142,31 @@ fun RegisterScreen(navController: NavController) {
                 Button(
                     onClick = {
                         if (isFormValid) {
-                            navController.navigate(Screen.Home.route)
-                        } else {
-                            errorMessage = "Vui lòng nhập đầy đủ thông tin bắt buộc!"
+                            authViewModel.registerUser(
+                                onSuccess = {
+                                    showSuccessDialog = true // ✅ Hiển thị hộp thoại khi thành công
+                                }
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = isFormValid
                 ) {
                     Text("Đăng ký")
+                }
+
+                // ✅ Hộp thoại "Đăng ký thành công"
+                if (showSuccessDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showSuccessDialog = false },
+                        title = { Text("Thành công!") },
+                        text = { Text("Bạn đã đăng ký thành công. Vui lòng đăng nhập.") },
+                        confirmButton = {
+                            Button(onClick = { showSuccessDialog = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -175,20 +187,22 @@ fun RegisterTopBar(navController: NavController) {
 }
 
 @Composable
-fun RoleDropdown(selectedRole: String, onRoleSelected: (String) -> Unit) {
+fun RoleDropdown(selectedRole: Int, onRoleSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val roles = listOf("Member" to 0, "Manager" to 1, "Admin" to 2)
+    val roleName = roles.find { it.second == selectedRole }?.first ?: "Member"
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text("Chọn vai trò:")
         Button(onClick = { expanded = true }) {
-            Text(selectedRole)
+            Text(roleName)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            listOf("User", "Admin").forEach { role ->
+            roles.forEach { (name, value) ->
                 DropdownMenuItem(
-                    text = { Text(role) },
+                    text = { Text(name) },
                     onClick = {
-                        onRoleSelected(role)
+                        onRoleSelected(value)
                         expanded = false
                     }
                 )

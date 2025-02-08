@@ -17,11 +17,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.membershipmanagement.navigation.Screen
 import com.example.membershipmanagement.viewmodel.AuthViewModel
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
@@ -70,7 +72,9 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    authViewModel.login { navController.navigate(Screen.Home.route) }
+                    authViewModel.login {
+                        profileViewModel.getProfile()
+                        navController.navigate(Screen.Home.route) }
                           },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading

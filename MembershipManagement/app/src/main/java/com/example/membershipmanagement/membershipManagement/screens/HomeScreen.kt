@@ -1,5 +1,6 @@
 package com.example.membershipmanagement.membershipManagement.screens
 
+import UserViewModel
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -31,11 +32,12 @@ import com.example.membershipmanagement.viewmodel.ProfileViewModel
 @Composable
 fun HomeScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    userViewModel: UserViewModel
 ) {
 
-    val profileState by profileViewModel.profileState.collectAsState()
-    profileViewModel.getProfile()
+
+
     val avatarUrl = profileViewModel.getAvatarUrl()
     Scaffold(
         topBar = { HomeTopBar() }
@@ -58,7 +60,8 @@ fun HomeScreen(
                 Log.d("HomeScreen","Url ${profileViewModel.getAvatarUrl()}")
                 Image(
 
-                    painter = rememberImagePainter(avatarUrl),
+                    painter = if (avatarUrl != "") rememberImagePainter(avatarUrl)
+                    else painterResource(id = R.drawable.avatar),
                     contentDescription = "Ảnh đại diện",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -69,14 +72,12 @@ fun HomeScreen(
 
             // Tên  và Vai trò
             Text(
-                text = profileViewModel.getName(),
+                text = profileViewModel.getFullName()   ,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text =
-                    profileViewModel.getRole()
-                ,
+                text = profileViewModel.getHighestRole(),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -99,12 +100,13 @@ fun HomeScreen(
                         navController.navigate(Screen.ChangePassword.route)
                     }
 
-                    if (profileViewModel.getRole() == "Admin") {
+                    if (profileViewModel.getHighestRole() != "Member") {
                         HomeButton(text = "Đăng ký tài khoản") {
                             navController.navigate(Screen.Register.route)
                         }
                         HomeButton(text = "Quản lý hội viên") {
                             navController.navigate(Screen.Members.route)
+                            userViewModel.fetchUsers()
                         }
                         HomeButton(text = "Quản lý tài chính") {
                             navController.navigate(Screen.Finance.route)

@@ -1,5 +1,6 @@
 package com.example.membershipmanagement
 
+import UserViewModel
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +29,7 @@ import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.data.remote.RetrofitClient
 import com.example.membershipmanagement.data.repository.AuthRepository
 import com.example.membershipmanagement.data.repository.ProfileRepository
+import com.example.membershipmanagement.data.repository.UserRepository
 
 import com.example.membershipmanagement.navigation.Screen
 import com.example.membershipmanagement.navigation.SetupNavGraph
@@ -46,11 +48,12 @@ class MainActivity : ComponentActivity() {
         val userPreferences = UserPreferences(this)  // Khởi tạo UserPreferences
         val authRepository  = AuthRepository(apiService, userPreferences)
         val profileRepository = ProfileRepository(apiService,userPreferences)
+        val userRepository = UserRepository(apiService, userPreferences)
         enableEdgeToEdge()
         setContent {
             MembershipManagementTheme {
 
-                    MainScreen(authRepository,profileRepository)
+                    MainScreen(authRepository,profileRepository,userRepository)
 
             }
         }
@@ -60,7 +63,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileRepository) {
+fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileRepository, userRepository: UserRepository) {
     val navController = rememberNavController()
 
     val authViewModel: AuthViewModel = viewModel(factory = GenericViewModelFactory { AuthViewModel(
@@ -69,29 +72,10 @@ fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileReposit
     val profileViewModel: ProfileViewModel = viewModel(factory = GenericViewModelFactory { ProfileViewModel(
         profileRepository
     )})
-    SetupNavGraph(navController = navController, authViewModel, profileViewModel)
+    val userViewModel: UserViewModel = viewModel(factory = GenericViewModelFactory { UserViewModel(
+        userRepository
+    )})
+    SetupNavGraph(navController = navController, authViewModel, profileViewModel, userViewModel )
 
 }
-@Composable
-fun BottomNavBar(navController: NavController) {
-    val items = listOf(
-        Screen.Home, Screen.Members, Screen.Events, Screen.Finance, Screen.Reports
-    )
-    val navBackStackEntry = navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry.value?.destination?.route
 
-    NavigationBar {
-        items.forEach { screen ->
-            NavigationBarItem(
-                selected = currentRoute == screen.route,
-                onClick = { navController.navigate(screen.route) },
-                icon = { Icon(Icons.Default.Home, contentDescription = screen.route) },
-                label = { Text(screen.route.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.ROOT
-                    ) else it.toString()
-                }) }
-            )
-        }
-    }
-}
