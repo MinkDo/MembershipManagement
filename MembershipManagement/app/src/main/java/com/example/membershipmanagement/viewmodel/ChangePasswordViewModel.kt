@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import androidx.navigation.NavController
+import com.example.membershipmanagement.data.repository.ChangePasswordRepository
 
 data class ChangePasswordUiState(
     val oldPassword: String = "",
@@ -18,7 +19,7 @@ data class ChangePasswordUiState(
     val isLoading: Boolean = false
 )
 
-class ChangePasswordViewModel(private val userRepository: UserRepository) : ViewModel() {
+class ChangePasswordViewModel(private val changePasswordRepository: ChangePasswordRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ChangePasswordUiState())
     val uiState: StateFlow<ChangePasswordUiState> get() = _uiState
 
@@ -60,7 +61,7 @@ class ChangePasswordViewModel(private val userRepository: UserRepository) : View
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = "", successMessage = "")
 
-            val result = userRepository.changePassword(
+            val result = changePasswordRepository.changePassword(
                 userId = userId,
                 currentPassword = _uiState.value.oldPassword,
                 newPassword = _uiState.value.newPassword,

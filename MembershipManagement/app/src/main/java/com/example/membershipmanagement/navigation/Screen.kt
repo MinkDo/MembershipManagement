@@ -12,34 +12,42 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.membershipmanagement.events.screens.EventScreen
 import com.example.membershipmanagement.loginRegister.screens.LoginScreen
 import com.example.membershipmanagement.loginRegister.screens.RegisterScreen
 import com.example.membershipmanagement.membershipManagement.screens.ChangePasswordScreen
 
-import com.example.membershipmanagement.membershipManagement.screens.EventScreen
+
 import com.example.membershipmanagement.membershipManagement.screens.FinanceScreen
 import com.example.membershipmanagement.membershipManagement.screens.HomeScreen
 import com.example.membershipmanagement.membershipManagement.screens.MemberScreen
 import com.example.membershipmanagement.membershipManagement.screens.ProfileScreen
 import com.example.membershipmanagement.membershipManagement.screens.ReportScreen
 import com.example.membershipmanagement.viewmodel.AuthViewModel
+import com.example.membershipmanagement.viewmodel.ChangePasswordViewModel
+import com.example.membershipmanagement.viewmodel.EventViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 
-fun SetupNavGraph(navController: NavHostController, authViewModel: AuthViewModel, profileViewModel: ProfileViewModel, userViewModel: UserViewModel) {
+fun SetupNavGraph(navController: NavHostController,
+                  authViewModel: AuthViewModel,
+                  profileViewModel: ProfileViewModel,
+                  userViewModel: UserViewModel,
+                  changePasswordViewModel: ChangePasswordViewModel,
+                  eventViewModel: EventViewModel) {
 
     NavHost(navController = navController, startDestination = Screen.Login.route) {
-        composable(Screen.Home.route) { HomeScreen(navController,profileViewModel,userViewModel) }
+        composable(Screen.Home.route) { HomeScreen(navController,profileViewModel,userViewModel,eventViewModel) }
         composable(Screen.Members.route) { MemberScreen(navController,userViewModel,profileViewModel) }
-        composable(Screen.Events.route) { EventScreen(navController) }
+        composable(Screen.Events.route) { EventScreen(navController,eventViewModel,profileViewModel) }
         composable(Screen.Finance.route) { FinanceScreen(navController) }
         composable(Screen.Reports.route) { ReportScreen(navController) }
         composable(Screen.Login.route) { LoginScreen(navController, authViewModel, profileViewModel )  }
         composable(Screen.Register.route) { RegisterScreen(navController, authViewModel)  }
         composable(Screen.Profile.route) { ProfileScreen(navController,profileViewModel)  }
-        composable(Screen.ChangePassword.route) { ChangePasswordScreen(navController)  }
+        composable(Screen.ChangePassword.route) { ChangePasswordScreen(navController, changePasswordViewModel, profileViewModel)  }
         composable(Screen.EditProfile.route) { EditProfileScreen(navController,profileViewModel)  }
     }
 }

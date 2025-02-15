@@ -27,13 +27,15 @@ import coil.compose.rememberImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.navigation.Screen
+import com.example.membershipmanagement.viewmodel.EventViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    eventViewModel: EventViewModel
 ) {
 
 
@@ -91,6 +93,7 @@ fun HomeScreen(
             ) {
                 item {
                     HomeButton(text = "Quản lý sự kiện") {
+                        eventViewModel.fetchEvents()
                         navController.navigate(Screen.Events.route)
                     }
                     HomeButton(text = "Thông tin cá nhân") {

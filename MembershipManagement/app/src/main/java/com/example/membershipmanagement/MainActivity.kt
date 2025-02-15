@@ -28,6 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.data.remote.RetrofitClient
 import com.example.membershipmanagement.data.repository.AuthRepository
+import com.example.membershipmanagement.data.repository.ChangePasswordRepository
+import com.example.membershipmanagement.data.repository.EventRepository
 import com.example.membershipmanagement.data.repository.ProfileRepository
 import com.example.membershipmanagement.data.repository.UserRepository
 
@@ -37,6 +39,8 @@ import com.example.membershipmanagement.ui.theme.MembershipManagementTheme
 import com.example.membershipmanagement.utils.GenericViewModelFactory
 import com.example.membershipmanagement.utils.UserPreferences
 import com.example.membershipmanagement.viewmodel.AuthViewModel
+import com.example.membershipmanagement.viewmodel.ChangePasswordViewModel
+import com.example.membershipmanagement.viewmodel.EventViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 import java.util.Locale
 
@@ -49,11 +53,13 @@ class MainActivity : ComponentActivity() {
         val authRepository  = AuthRepository(apiService, userPreferences)
         val profileRepository = ProfileRepository(apiService,userPreferences)
         val userRepository = UserRepository(apiService, userPreferences)
+        val changePasswordRepository = ChangePasswordRepository(apiService, userPreferences)
+        val eventRepository = EventRepository(apiService, userPreferences)
         enableEdgeToEdge()
         setContent {
             MembershipManagementTheme {
 
-                    MainScreen(authRepository,profileRepository,userRepository)
+                    MainScreen(authRepository,profileRepository,userRepository, changePasswordRepository,eventRepository)
 
             }
         }
@@ -63,7 +69,11 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileRepository, userRepository: UserRepository) {
+fun MainScreen(authRepository: AuthRepository,
+               profileRepository: ProfileRepository,
+               userRepository: UserRepository,
+               changePasswordRepository: ChangePasswordRepository,
+               eventRepository: EventRepository) {
     val navController = rememberNavController()
 
     val authViewModel: AuthViewModel = viewModel(factory = GenericViewModelFactory { AuthViewModel(
@@ -75,7 +85,13 @@ fun MainScreen(authRepository: AuthRepository, profileRepository: ProfileReposit
     val userViewModel: UserViewModel = viewModel(factory = GenericViewModelFactory { UserViewModel(
         userRepository
     )})
-    SetupNavGraph(navController = navController, authViewModel, profileViewModel, userViewModel )
+    val changeViewModel: ChangePasswordViewModel = viewModel(factory = GenericViewModelFactory { ChangePasswordViewModel(
+        changePasswordRepository
+    )})
+    val eventViewModel: EventViewModel = viewModel(factory = GenericViewModelFactory { EventViewModel(
+        eventRepository
+    )})
+    SetupNavGraph(navController = navController, authViewModel, profileViewModel, userViewModel, changeViewModel, eventViewModel )
 
 }
 

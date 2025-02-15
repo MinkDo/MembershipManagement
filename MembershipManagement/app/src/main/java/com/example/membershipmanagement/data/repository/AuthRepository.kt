@@ -3,6 +3,7 @@ package com.example.membershipmanagement.data.repository
 import android.util.Log
 import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.utils.UserPreferences
+import com.example.membershipmanagement.utils.extractErrorMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -96,12 +97,13 @@ class AuthRepository(private val apiService: ApiService, private val userPrefere
             )
 
             if (response.isSuccessful) {
-                Log.d("ProfileRepository", "Cập nhật thành công")
+                Log.d("AuthRepository", "Cập nhật thành công")
                 Result.success("Cập nhật thành công")
             } else {
                 // 📌 Trích xuất lỗi từ JSON response
                 val errorBody = response.errorBody()?.string()
                 val errorMessage = extractErrorMessage(errorBody)
+                Log.d("AuthRepository","Response: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
@@ -109,24 +111,6 @@ class AuthRepository(private val apiService: ApiService, private val userPrefere
         }
     }
 
-    private fun extractErrorMessage(errorBody: String?): String {
-        return try {
-            val jsonObject = JSONObject(errorBody ?: "{}")
-            val errorsObject = jsonObject.optJSONObject("errors")
-            val errorMessages = mutableListOf<String>()
 
-            errorsObject?.keys()?.forEach { key ->
-                errorsObject.getJSONArray(key).let { array ->
-                    for (i in 0 until array.length()) {
-                        errorMessages.add(array.getString(i))
-                    }
-                }
-            }
-
-            errorMessages.joinToString("\n") // Gộp tất cả lỗi lại thành 1 chuỗi
-        } catch (e: Exception) {
-            "Lỗi không xác định"
-        }
-    }
 
 }

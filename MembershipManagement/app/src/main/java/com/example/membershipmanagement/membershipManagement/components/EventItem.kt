@@ -1,32 +1,86 @@
-package com.example.membershipmanagement.membershipManagement.components
+package com.example.membershipmanagement.events.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
+import com.example.membershipmanagement.data.repository.Event
+import com.example.membershipmanagement.viewmodel.EventViewModel
 
 @Composable
-fun EventItem(eventName: String) {
+fun EventItem(
+    event: Event,
+    isAdmin: Boolean,
+    eventViewModel: EventViewModel,
+    onRegister: () -> Unit,
+    onUnregister: () -> Unit,
+    onDelete: (() -> Unit)? = null,
+    onApprove: (() -> Unit)? = null
+) {
+    var message by remember { mutableStateOf("") } // ✅ Trạng thái cục bộ chỉ cho sự kiện này
+    val uiState by eventViewModel.uiState.collectAsState()
+
     Card(
+        shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Text(
-            text = eventName,
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            // 📝 Thông tin sự kiện
+            Text(text = event.name, style = MaterialTheme.typography.titleLarge)
+            Text(text = "Địa điểm: ${event.location ?: "Chưa có"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Thời gian: ${event.startDate} - ${event.endDate ?: "?"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Trạng thái: ${event.status.joinToString(", ")}", style = MaterialTheme.typography.bodyMedium)
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 🎯 Nút chức năng
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                if (isAdmin) {
+                    Button(onClick = {
+                        onApprove?.invoke()
+
+                    }) {
+                        Text("Duyệt thành viên")
+                    }
+
+                    Button(
+                        onClick = {
+                            onDelete?.invoke()
+
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Xóa")
+                    }
+                } else {
+                    Button(onClick = {
+                        onRegister()
+
+                    }) {
+                        Text("Đăng ký")
+                    }
+
+                    Button(
+                        onClick = {
+                            onUnregister()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Hủy đăng ký")
+                    }
+                }
+            }
+
+            // 🔔 Hiển thị thông báo chỉ cho sự kiện này
+            if (message.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
+            }
+        }
     }
-}
-@Preview(showSystemUi = true)
-@Composable
-fun demo1(){
-    EventItem("ajajajaja")
 }

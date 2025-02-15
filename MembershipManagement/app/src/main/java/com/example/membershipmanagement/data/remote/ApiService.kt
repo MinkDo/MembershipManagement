@@ -1,6 +1,8 @@
 package com.example.membershipmanagement.data.remote
 
 import com.example.membershipmanagement.data.repository.AccountResponse
+import com.example.membershipmanagement.data.repository.ChangePasswordRequest
+import com.example.membershipmanagement.data.repository.EventResponse
 import com.example.membershipmanagement.data.repository.LoginRequest
 import com.example.membershipmanagement.data.repository.LoginResponse
 import com.example.membershipmanagement.data.repository.UserApiResponse
@@ -35,6 +37,12 @@ interface ApiService {
         @Part("Password") password: RequestBody,
         @Part("ConfirmPassword") confirmPassword: RequestBody
     ): Response<AccountResponse>
+    @POST("events/{eventId}/register")
+    suspend fun registerForEvent(
+        @Header("Authorization") token: String,
+        @Path("eventId") eventId: Int
+    ): Response<EventResponse>
+
 
     @GET("account/profile")
     suspend fun getProfile(@Header("Authorization") token : String): Response<AccountResponse>
@@ -54,6 +62,20 @@ interface ApiService {
         @Query("page") page: Int,
         @Query("size") size: Int
     ): Response<UserApiResponse>
+    @GET("events")
+    suspend fun getEvents(
+        @Header("Authorization") token : String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 10
+    ): Response<EventResponse>
+    @GET("events/filter")
+    suspend fun getFilteredEvents(
+        @Header("Authorization") token : String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 10,
+        @Query("name") name: String? = null,
+        @Query("status") status: Int? = null
+    ): Response<EventResponse>
 
 
     @Multipart
@@ -71,8 +93,28 @@ interface ApiService {
         @Part("CurrentRank") currentRank: RequestBody,
         @Part("JoinDate") joinDate: RequestBody
     ): Response<AccountResponse>
+    @PUT("users/{id}/set-password")
+    suspend fun changePassword(
+        @Header("Authorization") token : String,
+        @Path("id") id: String,
+        @Body request: ChangePasswordRequest
+    ) : Response<Unit>
 
 
+
+
+    @DELETE("events/{id}")
+    suspend fun deleteEvent(
+        @Header("Authorization") token: String,
+        @Path("id") eventId: Int
+    ): Response<EventResponse>
+
+
+    @DELETE("events/{eventId}/unregister")
+    suspend fun unregisterFromEvent(
+        @Header("Authorization") token: String,
+        @Path("eventId") eventId: Int
+    ): Response<EventResponse>
     @Headers("Accept: */*")
     @DELETE("users/{id}")
     suspend fun deleteUser(@Header("Authorization") token : String, @Path("id") userId: String): Response<Unit>

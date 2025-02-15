@@ -29,7 +29,7 @@ fun FinanceItem(transaction: Transaction) {
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(transaction.description)
+            Text("transaction.description")
             Text(
                 text = "${transaction.amount}đ",
                 color = color

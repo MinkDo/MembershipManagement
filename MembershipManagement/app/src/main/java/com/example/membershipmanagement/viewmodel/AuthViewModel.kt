@@ -89,18 +89,21 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
             if (result.isSuccess) {
                 onSuccess()
+                _uiState.value = _uiState.value.copy(isLoading = false,fullName = "",
+                    email = "",
+                    phoneNumber = "",
+                    password = "",
+                    confirmPassword = "",
+                    avatarUri = null,
+                    role= 0, // 0 = Member, 1 = Manager, 2 = Admin
+                    errorMessage = "")
             } else {
                 _uiState.value = _uiState.value.copy(errorMessage = result.exceptionOrNull()?.message ?: "Lỗi không xác định")
+                Log.d("AuthViewModel","Error Register Response: ${_uiState.value.errorMessage}")
             }
 
-            _uiState.value = _uiState.value.copy(isLoading = false,fullName = "",
-            email = "",
-            phoneNumber = "",
-            password = "",
-            confirmPassword = "",
-            avatarUri = null,
-            role= 0, // 0 = Member, 1 = Manager, 2 = Admin
-            errorMessage = "")
+
+
         }
     }
 

@@ -3,6 +3,7 @@ package com.example.membershipmanagement.membershipManagement.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -15,13 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.membershipmanagement.viewmodel.ChangePasswordViewModel
+import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
 fun ChangePasswordScreen(
     navController: NavController,
-    viewModel: ChangePasswordViewModel = viewModel()
+    changePasswordViewModel: ChangePasswordViewModel,
+    profileViewModel: ProfileViewModel
+
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by changePasswordViewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = { ChangePasswordTopBar(navController) }
@@ -36,19 +40,19 @@ fun ChangePasswordScreen(
             PasswordTextField(
                 label = "Mật khẩu cũ",
                 password = uiState.oldPassword,
-                onPasswordChange = { viewModel.updateOldPassword(it) }
+                onPasswordChange = { changePasswordViewModel.updateOldPassword(it) }
             )
 
             PasswordTextField(
                 label = "Mật khẩu mới",
                 password = uiState.newPassword,
-                onPasswordChange = { viewModel.updateNewPassword(it) }
+                onPasswordChange = { changePasswordViewModel.updateNewPassword(it) }
             )
 
             PasswordTextField(
                 label = "Xác nhận mật khẩu mới",
                 password = uiState.confirmPassword,
-                onPasswordChange = { viewModel.updateConfirmPassword(it) }
+                onPasswordChange = { changePasswordViewModel.updateConfirmPassword(it) }
             )
 
             if (uiState.errorMessage.isNotEmpty()) {
@@ -58,7 +62,7 @@ fun ChangePasswordScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { viewModel.changePassword(navController) },
+                onClick = { changePasswordViewModel.changePassword(profileViewModel.getUserId()) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState.isButtonEnabled
             ) {
@@ -75,7 +79,7 @@ fun ChangePasswordTopBar(navController: NavController) {
         title = { Text("Đổi mật khẩu", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.VisibilityOff, contentDescription = "Quay lại")
+                Icon(Icons.Default.ArrowBackIos, contentDescription = "Quay lại")
             }
         }
     )

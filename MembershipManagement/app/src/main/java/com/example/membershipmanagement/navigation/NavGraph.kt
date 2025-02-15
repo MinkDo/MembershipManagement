@@ -11,4 +11,5 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile_screen")
     object ChangePassword: Screen("changePassword_screen")
     object EditProfile: Screen("edit_screen")
+    object CreateEvent: Screen("createEvent_screen")
 }
