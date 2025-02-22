@@ -27,7 +27,9 @@ import coil.compose.rememberImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import com.example.membershipmanagement.R
 import com.example.membershipmanagement.navigation.Screen
+import com.example.membershipmanagement.viewmodel.AchievementViewModel
 import com.example.membershipmanagement.viewmodel.EventViewModel
+import com.example.membershipmanagement.viewmodel.FinanceViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 
 @Composable
@@ -35,7 +37,9 @@ fun HomeScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
     userViewModel: UserViewModel,
-    eventViewModel: EventViewModel
+    eventViewModel: EventViewModel,
+    financeViewModel: FinanceViewModel,
+    achievementViewModel: AchievementViewModel
 ) {
 
 
@@ -111,7 +115,12 @@ fun HomeScreen(
                             navController.navigate(Screen.Members.route)
                             userViewModel.fetchUsers()
                         }
+                        HomeButton(text = "Quản lý thành tích") {
+                            achievementViewModel.fetchFilteredAchievements()
+                            navController.navigate(Screen.Achievement.route)
+                        }
                         HomeButton(text = "Quản lý tài chính") {
+                            financeViewModel.fetchFinances()
                             navController.navigate(Screen.Finance.route)
                         }
                         HomeButton(text = "Thống kê & Báo cáo") {

@@ -12,4 +12,11 @@ sealed class Screen(val route: String) {
     object ChangePassword: Screen("changePassword_screen")
     object EditProfile: Screen("edit_screen")
     object CreateEvent: Screen("createEvent_screen")
+    object Achievement: Screen("achievement_screen")
+    object EditEvent: Screen("editEvent_screen")
+    object CreateAchievement: Screen("creatAchievement_screen")
+    object EditAchievement: Screen("editAchievement_screen")
+    object CreateFinance: Screen("createFinance_screen")
+    object EditFinance: Screen("editFinance_screen")
+    object EventRegistration: Screen("eventRegistration_screen")
 }

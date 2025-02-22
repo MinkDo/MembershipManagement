@@ -1,5 +1,6 @@
-package com.example.membershipmanagement.finances.components
+package com.example.membershipmanagement.achievements.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,12 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.membershipmanagement.data.repository.Finance
+import com.example.membershipmanagement.data.repository.Achievement
+import com.example.membershipmanagement.viewmodel.EditEventViewModel
 
 @Composable
-fun FinanceItem(finance: Finance,
-                onClick: ()-> Unit,
-                onDelete: ()->Unit) {
+fun AchievementItem(achievement: Achievement, onClick: ()->Unit, onDelete: ()->Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -25,18 +25,15 @@ fun FinanceItem(finance: Finance,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 📝 Thông tin giao dịch
-            Text(text = finance.category, style = MaterialTheme.typography.titleLarge)
-            Text(text = "Số tiền: ${finance.amount} VNĐ", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Ngày giao dịch: ${finance.transactionDate}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Loại: ${if (finance.type == 0) "Thu" else "Chi"}", style = MaterialTheme.typography.bodyMedium)
+            // 🏆 Thông tin thành tích
+            Text(text = achievement.name, style = MaterialTheme.typography.titleLarge)
+            Text(text = "Ngày đạt được: ${achievement.dateAchieved}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Mô tả: ${achievement.description ?: "Không có"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Sự kiện: ${achievement.event.id}", style = MaterialTheme.typography.bodyMedium)
+            // 🎯 Nút chức năng
 
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // 📌 Hiển thị mô tả nếu có
-            finance.description?.let {
-                Text(text = "Mô tả: $it", style = MaterialTheme.typography.bodySmall)
-            }
+
         }
         Button(
             modifier = Modifier.align(alignment = Alignment.End),

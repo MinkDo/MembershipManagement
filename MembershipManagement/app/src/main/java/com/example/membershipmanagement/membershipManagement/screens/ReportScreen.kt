@@ -1,186 +1,121 @@
-package com.example.membershipmanagement.membershipManagement.screens
+package com.example.membershipmanagement.reports.screens
 
-import android.content.Context
-import android.graphics.pdf.PdfDocument
-import android.os.Environment
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Canvas
+import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-//import androidx.compose.ui.graphics.drawscope.drawRoundRect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import java.time.LocalDate
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.membershipmanagement.viewmodel.ReportViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReportScreen(
-    navController: NavController
-) {
-    var selectedMonth by remember { mutableStateOf(LocalDate.now().monthValue) }
-    val months = (1..12).toList()
+fun ReportScreen(navController: NavController, reportViewModel: ReportViewModel = viewModel()) {
+    val uiState by reportViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    // Giả lập dữ liệu thu/chi theo tháng
-    val reports = mapOf(
-        1 to Pair(2000000.0, 800000.0),
-        2 to Pair(1500000.0, 900000.0),
-        3 to Pair(1800000.0, 700000.0),
-    )
-    val (totalIncome, totalExpense) = reports[selectedMonth] ?: Pair(0.0, 0.0)
+    LaunchedEffect(Unit) {
+        reportViewModel.fetchReportData()
+    }
+
+    // Hàm chọn ngày
+    fun showDatePicker(initialDate: String?, onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        initialDate?.let {
+            dateFormat.parse(it)?.let { date -> calendar.time = date }
+        }
+
+        DatePickerDialog(context, { _, year, month, day ->
+            calendar.set(year, month, day)
+            onDateSelected(dateFormat.format(calendar.time))
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+    }
 
     Scaffold(
-        topBar = {
-            ReportTopBar(navController)
-        }
+        topBar = { ReportTopBar(navController) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
-            // Dropdown chọn tháng
-            MonthDropdown(selectedMonth, months) { selectedMonth = it }
+            // Bộ lọc ngày
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { showDatePicker(uiState.startDate) { reportViewModel.updateDateRange(it, uiState.endDate) } },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(uiState.startDate ?: "Chọn ngày bắt đầu")
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ReportCard("Tổng thu", totalIncome, Color.Green)
-            ReportCard("Tổng chi", totalExpense, Color.Red)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Chi tiết giao dịch tháng ${selectedMonth}", style = MaterialTheme.typography.titleMedium)
-
-            ReportChart(income = totalIncome, expense = totalExpense)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = { exportReportToPDF(selectedMonth, totalIncome, totalExpense) }) {
-                Text("Xuất báo cáo PDF")
+                Button(
+                    onClick = { showDatePicker(uiState.endDate) { reportViewModel.updateDateRange(uiState.startDate, it) } },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(uiState.endDate ?: "Chọn ngày kết thúc")
+                }
             }
-        }
-    }
-}
 
-@Composable
-fun MonthDropdown(selectedMonth: Int, months: List<Int>, onMonthSelected: (Int) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+            Spacer(modifier = Modifier.height(16.dp))
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Button(onClick = { expanded = true }) {
-            Text("Tháng ${selectedMonth}")
-        }
-
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            months.forEach { month ->
-                DropdownMenuItem(
-                    text = { Text("Tháng $month") },
-                    onClick = {
-                        onMonthSelected(month)
-                        expanded = false
+            if (uiState.isLoading) {
+                CircularProgressIndicator()
+            } else if (uiState.errorMessage.isNotEmpty()) {
+                Text("Lỗi: ${uiState.errorMessage}", color = MaterialTheme.colorScheme.error)
+            } else {
+                uiState.reportData?.let { report ->
+                    report.forEach { data ->
+                        ReportItem(type = data.type, transactionCount = data.transactionCount, totalAmount = data.totalAmount, averageAmount = data.averageAmount)
                     }
-                )
+                }
             }
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReportTopBar(
-    navController: NavController
-) {
-    TopAppBar(
-        title = { Text("Báo cáo", style = MaterialTheme.typography.titleLarge) },
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Text("←")
-            }
-        }
-    )
-}
 
 @Composable
-fun ReportCard(title: String, amount: Double, color: Color) {
+fun ReportItem(type: Int, transactionCount: Int, totalAmount: Int, averageAmount: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text("$amount đ", color = color, style = MaterialTheme.typography.bodyLarge)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = if (type == 0) "📥 Thu nhập" else "📤 Chi tiêu", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Số giao dịch: $transactionCount", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Tổng số tiền: ${formatCurrency(totalAmount)}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Trung bình mỗi giao dịch: ${formatCurrency(averageAmount)}", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-@Composable
-fun ReportChart(income: Double, expense: Double) {
-    val total = income + expense
-    val incomeRatio = if (total > 0) (income / total).toFloat() else 0f
-    val expenseRatio = if (total > 0) (expense / total).toFloat() else 0f
-
-    Canvas(modifier = Modifier.fillMaxWidth().height(40.dp)) {
-        drawRoundRect(
-            color = Color.Green,
-            size = Size(width = size.width * incomeRatio, height = size.height),
-            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
-        )
-        drawRoundRect(
-            color = Color.Red,
-            size = Size(width = size.width * expenseRatio, height = size.height),
-            topLeft = androidx.compose.ui.geometry.Offset(size.width * incomeRatio, 0f),
-            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
-        )
-    }
+// Định dạng số tiền
+fun formatCurrency(amount: Int): String {
+    return "%,d VND".format(amount)
 }
 
-fun exportReportToPDF(month: Int, income: Double, expense: Double) {
-    val pdfDocument = PdfDocument()
-    val pageInfo = PdfDocument.PageInfo.Builder(300, 600, 1).create()
-    val page = pdfDocument.startPage(pageInfo)
-
-    val canvas = page.canvas
-    val paint = android.graphics.Paint()
-
-    paint.textSize = 16f
-    canvas.drawText("Báo cáo tài chính tháng $month", 50f, 50f, paint)
-
-    paint.textSize = 14f
-    canvas.drawText("Tổng thu: ${income}đ", 50f, 100f, paint)
-    canvas.drawText("Tổng chi: ${expense}đ", 50f, 150f, paint)
-
-    pdfDocument.finishPage(page)
-
-    val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Reports")
-    if (!directory.exists()) directory.mkdirs()
-
-    val file = File(directory, "BaoCao_Thang_$month.pdf")
-    try {
-        val fos = FileOutputStream(file)
-        pdfDocument.writeTo(fos)
-        fos.close()
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-
-    pdfDocument.close()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReportTopBar(navController: NavController) {
+    TopAppBar(
+        title = { Text("Báo cáo tài chính", style = MaterialTheme.typography.titleLarge) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
+            }
+        }
+    )
 }

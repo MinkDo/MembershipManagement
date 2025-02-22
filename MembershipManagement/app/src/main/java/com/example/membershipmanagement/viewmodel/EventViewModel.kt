@@ -95,11 +95,12 @@ class EventViewModel(private val eventRepository: EventRepository) : ViewModel()
     // 🗑 Xóa sự kiện (Admin)
     fun deleteEvent(eventId: Int) {
         viewModelScope.launch {
-            val result = eventRepository.deleteEvent(eventId)
-            _uiState.value = _uiState.value.copy(
-                message = if (result.isSuccess) "Xóa sự kiện thành công!" else result.exceptionOrNull()?.message ?: "Lỗi khi xóa sự kiện"
-            )
+            eventRepository.deleteEvent(eventId)
+            fetchEvents()
 
         }
     }
+
+
+
 }

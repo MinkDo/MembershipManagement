@@ -15,19 +15,26 @@ import androidx.navigation.NavController
 import com.example.membershipmanagement.viewmodel.EventViewModel
 import com.example.membershipmanagement.events.components.EventItem
 import com.example.membershipmanagement.navigation.Screen
+import com.example.membershipmanagement.viewmodel.EditEventViewModel
+import com.example.membershipmanagement.viewmodel.EventRegistrationViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
 import com.example.membershipmanagement.viewmodel.SortType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun EventScreen(
     navController: NavController,
     eventViewModel: EventViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    editEventViewModel: EditEventViewModel,
+    eventRegistrationViewModel: EventRegistrationViewModel
 ) {
     val uiState by eventViewModel.uiState.collectAsState()
     val events = uiState.events
     val userRole by profileViewModel.profileState.collectAsState()
-    val isAdmin = userRole.userData?.roles?.contains("admin") == true
+    val isAdmin = userRole.userData?.roles?.contains("Admin") == true
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = { EventTopBar(navController) },
@@ -53,17 +60,21 @@ fun EventScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+        Row(
+            modifier = Modifier.padding(8.dp)
+        ) {
             // 📌 Bộ lọc trạng thái
             StatusFilterDropdown(
                 selectedStatus = uiState.selectedStatus,
                 onStatusSelected = { eventViewModel.updateStatusFilter(it) }
             )
-
+            Spacer(modifier = Modifier.weight(1f))
             // 🔽 Bộ lọc sắp xếp
             SortFilterDropdown(
                 selectedSort = uiState.sortType,
                 onSortSelected = { eventViewModel.updateSortType(it) }
             )
+        }
 
             // ✅ Hiển thị thông báo đăng ký / hủy đăng ký
             if (uiState.message.isNotEmpty()) {
@@ -82,9 +93,19 @@ fun EventScreen(
                                 event = event,
                                 isAdmin = isAdmin,
                                 eventViewModel = eventViewModel,
+                                onClick = {
+                                    if(isAdmin) {
+                                        coroutineScope.launch {
+                                            editEventViewModel.getEventById(event.id.toString())
+                                            delay(500)
+                                            navController.navigate(Screen.EditEvent.route)
+                                        }
+                                    }
+                                },
                                 onRegister = { eventViewModel.registerForEvent(event.id) },
                                 onUnregister = { eventViewModel.unregisterFromEvent(event.id) },
-                                onDelete = if (isAdmin) ({ eventViewModel.deleteEvent(event.id) }) else null
+                                onDelete = if (isAdmin) ({ eventViewModel.deleteEvent(event.id) }) else null,
+                                onApprove = if (isAdmin) ({eventRegistrationViewModel.fetchEventRegistrations(event.id)}) else null
                             )
                         }
                     }
@@ -117,7 +138,6 @@ fun SortFilterDropdown(selectedSort: SortType, onSortSelected: (SortType) -> Uni
         }
     }
 }
-
 
 @Composable
 fun StatusFilterDropdown(selectedStatus: Int?, onStatusSelected: (Int?) -> Unit) {
@@ -155,18 +175,3 @@ fun EventTopBar(navController: NavController) {
         }
     )
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EventTopBar(navController: NavController, isAdmin: Boolean) {
-    TopAppBar(
-        title = { Text("Quản lý sự kiện", style = MaterialTheme.typography.titleLarge) },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
-            }
-        }
-    )
-}
-

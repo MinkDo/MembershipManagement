@@ -10,6 +10,18 @@ import org.json.JSONObject
 import retrofit2.HttpException
 
 
+
+
+data class EventRequest(
+    val name: String,
+    val location: String,
+    val startDate: String,
+    val endDate: String,
+    val description: String,
+    val fee: Int,
+    val maxParticipants: Int
+)
+
 data class EventResponse(
     val statusCode: Int,
     val message: String?,
@@ -35,7 +47,7 @@ data class Event(
     val endDate: String?,
     val location: String,
     val description: String?,
-    val fee: Double?, // Có thể là null
+    val fee: Int?, // Có thể là null
     val maxParticipants: Int?, // Có thể là null
     val createdAt: String,
     val status: List<Int> // Trạng thái sự kiện (Có thể có nhiều trạng thái)
@@ -151,6 +163,34 @@ class EventRepository(private val apiService: ApiService,private val userPrefere
         }
     }
 
+
+    suspend fun createEvent(
+        name: String, location: String, startDate: String, endDate: String,
+        description: String, fee: Int, maxParticipants: Int
+    ): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val token = userPreferences.getToken() ?: return@withContext Result.failure(Exception("Bạn chưa đăng nhập"))
+                val response = apiService.createEvent(
+                    "Bearer $token",
+                    EventRequest(name, location, startDate, endDate, description, fee, maxParticipants)
+                )
+
+                response.body()?.let { responseBody ->
+                    if (response.isSuccessful && responseBody.statusCode == 200) {
+                        return@withContext Result.success("Tạo sự kiện thành công!")
+                    }
+                }
+
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = extractErrorMessage(errorBody)
+                Result.failure(Exception(errorMessage))
+
+            } catch (e: Exception) {
+                Result.failure(Exception("Lỗi kết nối: ${e.message}"))
+            }
+        }
+    }
 
     // 📌 Xóa sự kiện (chỉ dành cho Admin)
     suspend fun deleteEvent(eventId: Int): Result<String> {

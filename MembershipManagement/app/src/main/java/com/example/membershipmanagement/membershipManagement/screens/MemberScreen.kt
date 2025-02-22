@@ -49,15 +49,6 @@ fun MemberScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Bộ lọc
-            FilterRow(
-                selectedGender = uiState.selectedGender,
-                onGenderSelected = { userViewModel.updateGenderFilter(it) },
-                selectedBelt = uiState.selectedBelt,
-                onBeltSelected = { userViewModel.updateBeltFilter(it) },
-                selectedStatus = uiState.selectedStatus,
-                onStatusSelected = { userViewModel.updateStatusFilter(it) }
-            )
 
             Spacer(modifier = Modifier.height(8.dp))
 

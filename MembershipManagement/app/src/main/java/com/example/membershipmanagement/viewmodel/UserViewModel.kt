@@ -42,21 +42,7 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
 
 
-    // ✅ Cập nhật bộ lọc
-    fun updateGenderFilter(gender: String) {
-        _uiState.value = _uiState.value.copy(selectedGender = gender)
-        filterUsers()
-    }
 
-    fun updateBeltFilter(belt: String) {
-        _uiState.value = _uiState.value.copy(selectedBelt = belt)
-        filterUsers()
-    }
-
-    fun updateStatusFilter(status: String) {
-        _uiState.value = _uiState.value.copy(selectedStatus = status)
-        filterUsers()
-    }
 
     init {
         observeSearchQuery()

@@ -44,6 +44,9 @@ dependencies {
     implementation (libs.okhttp)
     implementation (libs.logging.interceptor)
 
+    implementation(libs.ui.graphics)
+
+
 
     implementation (libs.kotlin.reflect)
     implementation(libs.androidx.core.ktx)
@@ -75,6 +78,9 @@ dependencies {
     implementation (libs.retrofit.v290)
     implementation (libs.converter.gson.v290)
     implementation (libs.gson)
+
+
+
 
 
 
