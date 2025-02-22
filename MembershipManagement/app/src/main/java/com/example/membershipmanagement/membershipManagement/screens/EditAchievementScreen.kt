@@ -57,7 +57,7 @@ fun EditAchievementScreen(
     }
 
     Scaffold(
-        topBar = { EditAchievementTopBar(navController) }
+        topBar = { EditAchievementTopBar(navController,viewModel, eventViewModel, userViewModel, achievementViewModel) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -152,11 +152,21 @@ fun EditAchievementScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditAchievementTopBar(navController: NavController) {
+fun EditAchievementTopBar(navController: NavController,
+                          viewModel: CreateAchievementViewModel,
+                          eventViewModel: EventViewModel,
+                          userViewModel: UserViewModel,
+                          achievementViewModel: AchievementViewModel) {
+
     TopAppBar(
         title = { Text("Chỉnh sửa thành tích") },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                viewModel.resetMessage()
+                eventViewModel.resetMessage()
+                userViewModel.resetMessage()
+                achievementViewModel.resetMessage()
+                navController.popBackStack() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
             }
         }

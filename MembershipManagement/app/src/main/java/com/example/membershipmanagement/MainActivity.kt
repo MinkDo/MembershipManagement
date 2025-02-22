@@ -33,6 +33,7 @@ import com.example.membershipmanagement.data.repository.ChangePasswordRepository
 import com.example.membershipmanagement.data.repository.CreateAchievementRepository
 import com.example.membershipmanagement.data.repository.CreateFinanceRepository
 import com.example.membershipmanagement.data.repository.EditEventRepository
+import com.example.membershipmanagement.data.repository.EventRegistrationRepository
 import com.example.membershipmanagement.data.repository.EventRepository
 import com.example.membershipmanagement.data.repository.FinanceRepository
 import com.example.membershipmanagement.data.repository.ProfileRepository
@@ -52,6 +53,7 @@ import com.example.membershipmanagement.viewmodel.CreateAchievementViewModel
 import com.example.membershipmanagement.viewmodel.CreateEventViewModel
 import com.example.membershipmanagement.viewmodel.CreateFinanceViewModel
 import com.example.membershipmanagement.viewmodel.EditEventViewModel
+import com.example.membershipmanagement.viewmodel.EventRegistrationViewModel
 import com.example.membershipmanagement.viewmodel.EventViewModel
 import com.example.membershipmanagement.viewmodel.FinanceViewModel
 import com.example.membershipmanagement.viewmodel.ProfileViewModel
@@ -76,6 +78,7 @@ class MainActivity : ComponentActivity() {
         val editEventRepository = EditEventRepository(apiService, userPreferences)
         val createAchievementRepository = CreateAchievementRepository(apiService, userPreferences)
         val createFinanceRepository = CreateFinanceRepository(apiService, userPreferences)
+        val eventRegistrationRepository = EventRegistrationRepository(apiService, userPreferences)
         enableEdgeToEdge()
         setContent {
             MembershipManagementTheme {
@@ -90,7 +93,8 @@ class MainActivity : ComponentActivity() {
                         reportRepository,
                         editEventRepository,
                         createAchievementRepository,
-                        createFinanceRepository)
+                        createFinanceRepository,
+                        eventRegistrationRepository)
 
             }
         }
@@ -110,7 +114,8 @@ fun MainScreen(authRepository: AuthRepository,
                reportRepository: ReportRepository,
                editEventRepository: EditEventRepository,
                createAchievementRepository: CreateAchievementRepository,
-               createFinanceRepository: CreateFinanceRepository) {
+               createFinanceRepository: CreateFinanceRepository,
+               eventRegistrationRepository: EventRegistrationRepository) {
     val navController = rememberNavController()
 
     val authViewModel: AuthViewModel = viewModel(factory = GenericViewModelFactory { AuthViewModel(
@@ -149,6 +154,9 @@ fun MainScreen(authRepository: AuthRepository,
     val createFinanceViewModel: CreateFinanceViewModel = viewModel(factory = GenericViewModelFactory { CreateFinanceViewModel(
         createFinanceRepository
     )})
+    val eventRegistrationViewModel: EventRegistrationViewModel = viewModel(factory = GenericViewModelFactory { EventRegistrationViewModel(
+        eventRegistrationRepository
+    )})
     SetupNavGraph(navController = navController,
         authViewModel,
         profileViewModel,
@@ -161,7 +169,8 @@ fun MainScreen(authRepository: AuthRepository,
         reportViewModel,
         editEventViewModel,
         createAchievementViewModel,
-        createFinanceViewModel)
+        createFinanceViewModel,
+        eventRegistrationViewModel)
 
 }
 

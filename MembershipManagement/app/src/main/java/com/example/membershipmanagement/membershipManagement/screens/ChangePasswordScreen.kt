@@ -28,7 +28,7 @@ fun ChangePasswordScreen(
     val uiState by changePasswordViewModel.uiState.collectAsState()
 
     Scaffold(
-        topBar = { ChangePasswordTopBar(navController) }
+        topBar = { ChangePasswordTopBar(navController, changePasswordViewModel, profileViewModel) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -74,11 +74,18 @@ fun ChangePasswordScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangePasswordTopBar(navController: NavController) {
+fun ChangePasswordTopBar(navController: NavController,
+                         changePasswordViewModel: ChangePasswordViewModel,
+                         profileViewModel: ProfileViewModel) {
+
     TopAppBar(
         title = { Text("Đổi mật khẩu", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                changePasswordViewModel.resetMessage()
+                profileViewModel.resetMessage()
+                navController.popBackStack() }
+            ) {
                 Icon(Icons.Default.ArrowBackIos, contentDescription = "Quay lại")
             }
         }

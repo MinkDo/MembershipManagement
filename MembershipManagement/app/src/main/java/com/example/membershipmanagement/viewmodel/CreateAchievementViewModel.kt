@@ -113,4 +113,7 @@ class CreateAchievementViewModel(private val repository: CreateAchievementReposi
         )
         Log.d("CreateAchievementViewModel","Set AchievementData ${_uiState.value}")
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(message = "")
+    }
 }

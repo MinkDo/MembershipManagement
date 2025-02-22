@@ -5,6 +5,7 @@ import com.example.membershipmanagement.data.repository.Achievement
 import com.example.membershipmanagement.data.repository.AchievementRequest
 import com.example.membershipmanagement.data.repository.AchievementResponse
 import com.example.membershipmanagement.data.repository.ChangePasswordRequest
+import com.example.membershipmanagement.data.repository.ChangeUserRoleRequest
 import com.example.membershipmanagement.data.repository.CreateAchievementRequest
 import com.example.membershipmanagement.data.repository.EditAchievementResponse
 import com.example.membershipmanagement.data.repository.EditEventRequest
@@ -177,6 +178,12 @@ interface ApiService {
         @Part("CurrentRank") currentRank: RequestBody,
         @Part("JoinDate") joinDate: RequestBody
     ): Response<AccountResponse>
+    @PUT("users/{id}/roles")
+    suspend fun updateUserRole(
+        @Header("Authorization") token: String,
+        @Path("id") userId: String,
+        @Body request: ChangeUserRoleRequest
+    ): Response<Unit>
     @PUT("users/{id}/set-password")
     suspend fun changePassword(
         @Header("Authorization") token : String,
@@ -227,5 +234,10 @@ interface ApiService {
     @Headers("Accept: */*")
     @DELETE("users/{id}")
     suspend fun deleteUser(@Header("Authorization") token : String, @Path("id") userId: String): Response<Unit>
-
+    @DELETE("events/{eventId}/registerations/{userId}")
+    suspend fun deleteUserRegistration(
+        @Header("Authorization") token: String,
+        @Path("eventId") eventId: Int,
+        @Path("userId") userId: String
+    ): Response<Unit>
 }

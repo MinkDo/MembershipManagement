@@ -186,4 +186,7 @@ class ProfileViewModel(private val profileRepository: ProfileRepository) : ViewM
             }
         }
     }
+    fun resetMessage(){
+        _profileState.value= _profileState.value.copy(errorMessage = "")
+    }
 }

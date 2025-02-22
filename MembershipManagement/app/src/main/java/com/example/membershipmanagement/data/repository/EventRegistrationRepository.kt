@@ -61,4 +61,23 @@ class EventRegistrationRepository(private val apiService: ApiService, private va
             }
         }
     }
+
+    // ❌ Xóa đăng ký của một người dùng khỏi sự kiện
+    suspend fun deleteUserRegistration(eventId: Int, userId: String): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val token = userPreferences.getToken() ?: return@withContext Result.failure(Exception("Bạn chưa đăng nhập"))
+                val response = apiService.deleteUserRegistration("Bearer $token", eventId, userId)
+
+                return@withContext if (response.isSuccessful) {
+                    Result.success("Xóa đăng ký thành công")
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Lỗi API không xác định"
+                    Result.failure(Exception("Lỗi API: ${response.code()} - $errorMessage"))
+                }
+            } catch (e: Exception) {
+                Result.failure(Exception("Lỗi kết nối: ${e.message}"))
+            }
+        }
+    }
 }

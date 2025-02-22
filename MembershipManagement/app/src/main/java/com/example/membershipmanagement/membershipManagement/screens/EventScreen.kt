@@ -105,7 +105,13 @@ fun EventScreen(
                                 onRegister = { eventViewModel.registerForEvent(event.id) },
                                 onUnregister = { eventViewModel.unregisterFromEvent(event.id) },
                                 onDelete = if (isAdmin) ({ eventViewModel.deleteEvent(event.id) }) else null,
-                                onApprove = if (isAdmin) ({eventRegistrationViewModel.fetchEventRegistrations(event.id)}) else null
+                                onApprove = if (isAdmin) (
+                                        {
+                                            eventRegistrationViewModel.fetchEventRegistrations(event.id)
+                                            navController.navigate(Screen.EventRegistration.route)}
+
+
+                                ) else null
                             )
                         }
                     }

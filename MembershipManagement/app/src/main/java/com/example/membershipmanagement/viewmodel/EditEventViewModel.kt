@@ -94,4 +94,7 @@ class EditEventViewModel(private val editEventRepository: EditEventRepository) :
             maxParticipants = event.maxParticipants?.toString() ?: ""
         )
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(message = "")
+    }
 }

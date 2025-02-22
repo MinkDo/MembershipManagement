@@ -125,6 +125,8 @@ class CreateFinanceViewModel(private val repository: CreateFinanceRepository) : 
             }
         }
     }
-
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(message = "")
+    }
 
 }

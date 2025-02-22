@@ -79,4 +79,7 @@ class AchievementViewModel(private val achievementRepository: AchievementReposit
             fetchFilteredAchievements()
         }
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(errorMessage = "")
+    }
 }

@@ -77,4 +77,7 @@ class ChangePasswordViewModel(private val changePasswordRepository: ChangePasswo
             _uiState.value = _uiState.value.copy(isLoading = false)
         }
     }
+    fun resetMessage(){
+        _uiState.value = _uiState.value.copy(errorMessage = "")
+    }
 }

@@ -3,8 +3,10 @@ package com.example.membershipmanagement.data.repository
 import android.util.Log
 import com.example.membershipmanagement.data.remote.ApiService
 import com.example.membershipmanagement.utils.UserPreferences
+import com.example.membershipmanagement.utils.extractErrorMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
 data class UserApiResponse(
     val statusCode: Int,
@@ -22,7 +24,10 @@ data class UserDataResponse(
     val hasNext: Boolean,
     val items: List<User>
 )
-
+data class ChangeUserRoleRequest(
+    val yourPassword: String,
+    val roles: List<Int> // 0: Admin, 1: Manager, 2: Member
+)
 data class User(
     val id: String,
     val userName: String,
@@ -65,6 +70,28 @@ class UserRepository(private val apiService: ApiService, private val userPrefere
             }
         }
     }
+    suspend fun updateUserRole(userId: String, role: Int, password: String): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val token = userPreferences.getToken() ?: return@withContext Result.failure(Exception("Bạn chưa đăng nhập"))
+                val request = ChangeUserRoleRequest(yourPassword = password, roles = listOf(role))
+                val response = apiService.updateUserRole("Bearer $token", userId, request)
+
+                if (response.isSuccessful) {
+                    Result.success("Thay đổi quyền thành công!")
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = extractErrorMessage(errorBody)
+                    Result.failure(Exception(errorMessage))
+                }
+            } catch (e: HttpException) {
+                Result.failure(Exception("Lỗi HTTP: ${e.message}"))
+            } catch (e: Exception) {
+                Result.failure(Exception("Lỗi kết nối: ${e.message}"))
+            }
+        }
+    }
+
     suspend fun filterUsers(
         search: List<String>?,
         order: List<String>?,

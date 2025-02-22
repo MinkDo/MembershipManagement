@@ -3,6 +3,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.membershipmanagement.data.repository.User
 import com.example.membershipmanagement.data.repository.UserRepository
+import com.example.membershipmanagement.viewmodel.AchievementUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +68,17 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     fun updateSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
     }
+    fun updateUserRole(userId: String, role: Int, password: String) {
+        viewModelScope.launch {
+            val result = userRepository.updateUserRole(userId, role, password)
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(errorMessage = "Cập nhật quyền thành công!")
+                fetchUsers() // Cập nhật danh sách
+            } else {
+                _uiState.value = _uiState.value.copy(errorMessage = result.exceptionOrNull()?.message ?: "Lỗi khi cập nhật")
+            }
+        }
+    }
 
     // ✅ Gọi API với bộ lọc
     fun filterUsers(page: Int = 1, size: Int = 10) {
@@ -100,5 +112,8 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             }
 
         }
+    }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(errorMessage = "")
     }
 }

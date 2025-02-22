@@ -32,7 +32,7 @@ import com.example.membershipmanagement.viewmodel.AuthViewModel
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -46,7 +46,7 @@ fun RegisterScreen(
     }
 
     Scaffold(
-        topBar = { RegisterTopBar(navController) }
+        topBar = { RegisterTopBar(navController, authViewModel) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -175,11 +175,13 @@ fun RegisterScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterTopBar(navController: NavController) {
+fun RegisterTopBar(navController: NavController, authViewModel: AuthViewModel) {
     TopAppBar(
         title = { Text("Đăng ký hội viên", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                authViewModel.resetMessage()
+                navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
             }
         }

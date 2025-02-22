@@ -29,7 +29,7 @@ import java.util.*
 @Composable
 fun AchievementScreen(
     navController: NavController,
-    achievementViewModel: AchievementViewModel = viewModel(),
+    achievementViewModel: AchievementViewModel ,
     createAchievementViewModel: CreateAchievementViewModel,
     eventViewModel: EventViewModel,
     userViewModel: UserViewModel

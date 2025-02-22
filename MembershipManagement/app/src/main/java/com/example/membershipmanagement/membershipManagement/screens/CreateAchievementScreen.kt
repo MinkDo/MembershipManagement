@@ -55,7 +55,7 @@ fun CreateAchievementScreen(
     }
 
     Scaffold(
-        topBar = { CreateAchievementTopBar(navController) }
+        topBar = { CreateAchievementTopBar(navController,viewModel, eventViewModel, userViewModel, achievementViewModel) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -151,11 +151,19 @@ fun CreateAchievementScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateAchievementTopBar(navController: NavController) {
+fun CreateAchievementTopBar(navController: NavController,
+                            viewModel: CreateAchievementViewModel,
+                            eventViewModel: EventViewModel,
+                            userViewModel: UserViewModel,
+                            achievementViewModel: AchievementViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
     TopAppBar(
         title = { Text("Tạo thành tích mới") },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                uiState.copy(message = "")
+                navController.popBackStack()
+            }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
             }
         }

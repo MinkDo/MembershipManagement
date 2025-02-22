@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.membershipmanagement.account.screens.AccountRoleScreen
 import com.example.membershipmanagement.achievements.screens.AchievementScreen
 import com.example.membershipmanagement.achievements.screens.CreateAchievementScreen
 import com.example.membershipmanagement.events.screens.EditEventScreen
@@ -65,9 +66,9 @@ fun SetupNavGraph(navController: NavHostController,
 ) {
 
     NavHost(navController = navController, startDestination = Screen.Login.route) {
-        composable(Screen.Home.route) { HomeScreen(navController,profileViewModel,userViewModel,eventViewModel, financeViewModel, achievementViewModel) }
+        composable(Screen.Home.route) { HomeScreen(navController,profileViewModel,userViewModel,eventViewModel, financeViewModel, achievementViewModel, authViewModel) }
         composable(Screen.Members.route) { MemberScreen(navController,userViewModel,profileViewModel) }
-        composable(Screen.Events.route) { EventScreen(navController,eventViewModel,profileViewModel, editEventViewModel) }
+        composable(Screen.Events.route) { EventScreen(navController,eventViewModel,profileViewModel, editEventViewModel, eventRegistrationViewModel) }
         composable(Screen.Finance.route) { FinanceScreen(navController, financeViewModel,createFinanceModel) }
         composable(Screen.Reports.route) { ReportScreen(navController, reportViewModel) }
         composable(Screen.Login.route) { LoginScreen(navController, authViewModel, profileViewModel )  }
@@ -83,5 +84,6 @@ fun SetupNavGraph(navController: NavHostController,
         composable(Screen.CreateFinance.route) { CreateFinanceScreen(navController, createFinanceModel, financeViewModel)  }
         composable(Screen.EditFinance.route) { EditFinanceScreen(navController, createFinanceModel,financeViewModel) }
         composable(Screen.EventRegistration.route) { EventRegistrationScreen(navController, eventRegistrationViewModel) }
+        composable(Screen.AccountRole.route) { AccountRoleScreen(navController,userViewModel,profileViewModel) }
     }
 }

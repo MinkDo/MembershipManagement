@@ -42,4 +42,7 @@ class ReportViewModel(private val reportRepository: ReportRepository) : ViewMode
         _uiState.value = _uiState.value.copy(startDate = start, endDate = end)
         fetchReportData()
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(errorMessage = "")
+    }
 }

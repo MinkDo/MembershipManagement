@@ -61,7 +61,9 @@ class AuthRepository(private val apiService: ApiService, private val userPrefere
 
 
     }
-
+    fun logout(){
+        userPreferences.clear()
+    }
     suspend fun registerUser(
         roles: Int,
         avatarFile: File?,

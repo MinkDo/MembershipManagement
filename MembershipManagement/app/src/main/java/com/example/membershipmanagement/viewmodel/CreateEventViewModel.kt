@@ -70,4 +70,7 @@ class CreateEventViewModel(private val eventRepository: EventRepository) : ViewM
             }
         }
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(message = "")
+    }
 }

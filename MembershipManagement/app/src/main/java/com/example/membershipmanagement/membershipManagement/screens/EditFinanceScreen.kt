@@ -34,7 +34,7 @@ fun EditFinanceScreen(navController: NavController, viewModel: CreateFinanceView
     }
 
     Scaffold(
-        topBar = { EditFinanceTopBar(navController) }
+        topBar = { EditFinanceTopBar(navController,viewModel, financeViewModel) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -117,11 +117,16 @@ fun EditFinanceScreen(navController: NavController, viewModel: CreateFinanceView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditFinanceTopBar(navController: NavController) {
+fun EditFinanceTopBar(navController: NavController,viewModel: CreateFinanceViewModel, financeViewModel: FinanceViewModel) {
+
     TopAppBar(
         title = { Text("Chỉnh sửa giao dịch") },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                viewModel.resetMessage()
+                financeViewModel.resetMessage()
+                navController.popBackStack()
+            }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
             }
         }

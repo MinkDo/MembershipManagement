@@ -19,4 +19,5 @@ sealed class Screen(val route: String) {
     object CreateFinance: Screen("createFinance_screen")
     object EditFinance: Screen("editFinance_screen")
     object EventRegistration: Screen("eventRegistration_screen")
+    object AccountRole: Screen("role_screen")
 }

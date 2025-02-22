@@ -71,7 +71,17 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = false, email = "", password = "")
         }
     }
-
+    fun logout(){
+        authRepository.logout()
+        _uiState.value = _uiState.value.copy(isLoading = false,fullName = "",
+            email = "",
+            phoneNumber = "",
+            password = "",
+            confirmPassword = "",
+            avatarUri = null,
+            role= 0, // 0 = Member, 1 = Manager, 2 = Admin
+            errorMessage = "")
+    }
     fun registerUser(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -106,6 +116,8 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
         }
     }
-
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(errorMessage = "")
+    }
 }
 

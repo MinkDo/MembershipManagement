@@ -39,7 +39,7 @@ import java.util.*
 @Composable
 fun EditProfileScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel = viewModel()
+    profileViewModel: ProfileViewModel
 ) {
     val updateResult by profileViewModel.updateResult.collectAsState() // ✅ Lắng nghe kết quả API
     val uiState by profileViewModel.profileState.collectAsState()
@@ -65,7 +65,7 @@ fun EditProfileScreen(
     }
 
     Scaffold(
-        topBar = { EditProfileTopBar(navController) }
+        topBar = { EditProfileTopBar(navController, profileViewModel) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -262,11 +262,15 @@ fun DropdownField(label: String, options: List<String>, selectedOption: String, 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileTopBar(navController: NavController) {
+fun EditProfileTopBar(navController: NavController, profileViewModel: ProfileViewModel ) {
+
     TopAppBar(
         title = { Text("Chỉnh sửa hồ sơ", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+
+                profileViewModel.resetMessage()
+                navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
             }
         }

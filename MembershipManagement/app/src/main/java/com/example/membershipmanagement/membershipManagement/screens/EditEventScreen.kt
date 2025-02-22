@@ -40,7 +40,7 @@ fun EditEventScreen(navController: NavController,
     }
 
     Scaffold(
-        topBar = { EditEventTopBar(navController) }
+        topBar = { EditEventTopBar(navController,viewModel, eventViewModel) }
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -131,11 +131,18 @@ fun EditEventScreen(navController: NavController,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditEventTopBar(navController: NavController) {
+fun EditEventTopBar(navController: NavController,
+                    viewModel: EditEventViewModel,
+                    eventViewModel: EventViewModel) {
+
     TopAppBar(
         title = { Text("Chỉnh sửa sự kiện") },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                viewModel.resetMessage()
+                eventViewModel.resetMessage()
+
+                navController.popBackStack() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
             }
         }

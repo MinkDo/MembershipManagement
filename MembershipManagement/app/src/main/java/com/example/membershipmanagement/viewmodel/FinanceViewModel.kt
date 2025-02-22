@@ -82,4 +82,7 @@ class FinanceViewModel(private val financeRepository: FinanceRepository) : ViewM
             }
         }
     }
+    fun resetMessage(){
+        _uiState.value= _uiState.value.copy(errorMessage = "")
+    }
 }

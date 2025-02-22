@@ -37,7 +37,7 @@ fun CreateEventScreen(navController: NavController, viewModel: CreateEventViewMo
     }
 
     Scaffold(
-        topBar = { CreateEventTopBar(navController) }
+        topBar = { CreateEventTopBar(navController,viewModel, eventViewModel) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -118,11 +118,18 @@ fun CreateEventScreen(navController: NavController, viewModel: CreateEventViewMo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateEventTopBar(navController: NavController) {
+fun CreateEventTopBar(navController: NavController,
+                      viewModel: CreateEventViewModel,
+                      eventViewModel: EventViewModel) {
+
     TopAppBar(
         title = { Text("Tạo sự kiện mới") },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                viewModel.resetMessage()
+                eventViewModel.resetMessage()
+                navController.popBackStack()
+            }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
             }
         }
